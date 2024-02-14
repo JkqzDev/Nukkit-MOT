@@ -273,7 +273,7 @@ public class EntityFishingHook extends EntitySlenderProjectile {
             } else if (this.caughtEntity != null) {
                 Vector3 motion = this.shootingEntity.subtract(this).multiply(0.1);
                 motion.y += Math.sqrt(this.shootingEntity.distance(this)) * 0.08;
-                this.caughtEntity.setMotion(motion);
+                //this.caughtEntity.setMotion(motion);
             }
         }
         this.close();
