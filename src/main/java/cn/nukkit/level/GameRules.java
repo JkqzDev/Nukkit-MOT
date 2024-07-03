@@ -55,6 +55,8 @@ public class GameRules {
         gameRules.gameRules.put(PLAYERS_SLEEPING_PERCENTAGE, new Value<>(Type.INTEGER, 100, 618));
         gameRules.gameRules.put(RECIPES_UNLOCK, new Value<>(Type.BOOLEAN, false, 618));
         gameRules.gameRules.put(DO_LIMITED_CRAFTING, new Value<>(Type.BOOLEAN, false, 618));
+        gameRules.gameRules.put(SHOW_RECIPE_MESSAGE, new Value<>(Type.BOOLEAN, true, ProtocolInfo.v1_20_50));
+        gameRules.gameRules.put(PROJECTILES_CAN_BREAK_BLOCKS, new Value<>(Type.BOOLEAN, true, ProtocolInfo.v1_20_50));
 
         return gameRules;
     }
@@ -173,7 +175,7 @@ public class GameRules {
 
     public void writeBedrockNBT(CompoundTag nbt) {
         gameRules.forEach((gameRule, value) -> {
-            String name = gameRule.getName().toLowerCase();
+            String name = gameRule.getBedrockName();
             switch (value.type) {
                 case BOOLEAN:
                     nbt.putBoolean(name, value.getValueAsBoolean());
@@ -194,7 +196,7 @@ public class GameRules {
 
     public void readBedrockNBT(CompoundTag nbt) {
         gameRules.forEach((gameRule, value) -> {
-            String name = gameRule.name().toLowerCase();
+            String name = gameRule.getBedrockName();
             Tag tag = nbt.get(name);
             if (tag == null) {
                 return;

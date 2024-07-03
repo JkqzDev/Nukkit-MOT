@@ -22,6 +22,7 @@ public abstract class BlockEntity extends Position {
     public static final String ENDER_CHEST = "EnderChest";
     public static final String FURNACE = "Furnace";
     public static final String BLAST_FURNACE = "BlastFurnace";
+    public static final String SMOKER = "Smoker";
     public static final String SIGN = "Sign";
     public static final String MOB_SPAWNER = "MobSpawner";
     public static final String ENCHANT_TABLE = "EnchantTable";
@@ -50,6 +51,8 @@ public abstract class BlockEntity extends Position {
     public static final String BELL = "Bell";
     public static final String END_GATEWAY = "EndGateway";
     public static final String DECORATED_POT = "DecoratedPot";
+    public static final String TARGET = "Target";
+    public static final String BRUSHABLE_BLOCK = "BrushableBlock";
 
     public static long count = 1;
 
@@ -180,6 +183,9 @@ public abstract class BlockEntity extends Position {
     }
 
     public final void scheduleUpdate() {
+        if (this.level.isBeingConverted) {
+            return;
+        }
         this.level.scheduleBlockEntityUpdate(this);
     }
 
@@ -216,5 +222,9 @@ public abstract class BlockEntity extends Position {
                 .putInt("x", pos.getFloorX())
                 .putInt("y", pos.getFloorY())
                 .putInt("z", pos.getFloorZ());
+    }
+
+    public boolean canSaveToStorage() {
+        return !this.closed;
     }
 }

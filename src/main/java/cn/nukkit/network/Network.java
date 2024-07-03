@@ -31,7 +31,6 @@ import java.util.*;
  * Nukkit Project
  */
 @Log4j2
-@SuppressWarnings("unchecked")
 public class Network {
 
     public static final byte CHANNEL_NONE = 0;
@@ -287,13 +286,13 @@ public class Network {
         }
     }
 
-    @Deprecated
     /**
      * Process packets obtained from batch packets
      * Required to perform additional analyses and filter unnecessary packets
      *
      * @param packets packets
      */
+    @Deprecated
     public void processPackets(Player player, List<DataPacket> packets) {
         if (packets.isEmpty()) return;
         packets.forEach(player::handleDataPacket);
@@ -399,6 +398,7 @@ public class Network {
                 .registerPacket(ProtocolInfo.ADD_ENTITY_PACKET, AddEntityPacket.class)
                 .registerPacket(ProtocolInfo.ADD_ITEM_ENTITY_PACKET, AddItemEntityPacket.class)
                 .registerPacket(ProtocolInfo.ADD_PAINTING_PACKET, AddPaintingPacket.class)
+                .registerPacket(ProtocolInfo.TICK_SYNC_PACKET, TickSyncPacket.class)
                 .registerPacket(ProtocolInfo.ADD_PLAYER_PACKET, AddPlayerPacket.class)
                 .registerPacket(ProtocolInfo.ADVENTURE_SETTINGS_PACKET, AdventureSettingsPacket.class)
                 .registerPacket(ProtocolInfo.ANIMATE_PACKET, AnimatePacket.class)

@@ -76,6 +76,7 @@ public class SimpleCommandMap implements CommandMap {
         this.register("nukkit", new TransferServerCommand("transfer"));
         this.register("nukkit", new SeedCommand("seed"));
         this.register("nukkit", new PlaySoundCommand("playsound"));
+        this.register("nukkit", new StopSoundCommand("stopsound"));
         this.register("nukkit", new DebugPasteCommand("debugpaste"));
         this.register("nukkit", new GarbageCollectorCommand("gc"));
         this.register("nukkit", new ClearCommand("clear"));
@@ -83,6 +84,7 @@ public class SimpleCommandMap implements CommandMap {
         this.register("nukkit", new CameraShakeCommand("camerashake"));
         this.register("nukkit", new CameraCommand("camera"));
         this.register("nukkit", new TimingsCommand("timings"));
+        this.register("nukkit", new ConvertCommand("convert"));
     }
 
     @Override

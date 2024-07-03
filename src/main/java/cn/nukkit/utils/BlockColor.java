@@ -13,7 +13,8 @@ public class BlockColor  {
     public static final BlockColor AIR_BLOCK_COLOR = TRANSPARENT_BLOCK_COLOR;
     public static final BlockColor GRASS_BLOCK_COLOR = new BlockColor(0x7f, 0xb2, 0x38);
     public static final BlockColor SAND_BLOCK_COLOR = new BlockColor(0xf7, 0xe9, 0xa3);
-    public static final BlockColor CLOTH_BLOCK_COLOR = new BlockColor(0xc7, 0xc7, 0xc7);
+    public static final BlockColor WOOL_BLOCK_COLOR = new BlockColor(0xc7, 0xc7, 0xc7);
+    public static final BlockColor CLOTH_BLOCK_COLOR = WOOL_BLOCK_COLOR;
     public static final BlockColor TNT_BLOCK_COLOR = new BlockColor(0xff, 0x00, 0x00);
     public static final BlockColor ICE_BLOCK_COLOR = new BlockColor(0xa0, 0xa0, 0xff);
     public static final BlockColor IRON_BLOCK_COLOR = new BlockColor(0xa7, 0xa7, 0xa7);
@@ -56,6 +57,7 @@ public class BlockColor  {
     public static final BlockColor OBSIDIAN_BLOCK_COLOR = new BlockColor(0x15, 0x14, 0x1f);
     public static final BlockColor SPRUCE_BLOCK_COLOR = new BlockColor(0x81, 0x56, 0x31);
     public static final BlockColor NETHERRACK_BLOCK_COLOR = new BlockColor(0x70, 0x02, 0x00);
+    public static final BlockColor NETHER_BLOCK_COLOR = NETHERRACK_BLOCK_COLOR;
     public static final BlockColor REDSTONE_BLOCK_COLOR = TNT_BLOCK_COLOR;
 
     public static final BlockColor WHITE_TERRACOTA_BLOCK_COLOR = new BlockColor(0xd1, 0xb1, 0xa1);
@@ -82,7 +84,7 @@ public class BlockColor  {
     public static final BlockColor WARPED_STEM_BLOCK_COLOR = new BlockColor(0x3A, 0x8E, 0x8C);
     public static final BlockColor WARPED_HYPHAE_BLOCK_COLOR = new BlockColor(0x56, 0x2C, 0x3E);
     public static final BlockColor WARPED_WART_BLOCK_COLOR = new BlockColor(0x14, 0xB4, 0x85);
-
+    public static final BlockColor DEEPSLATE_BLOCK_COLOR = new BlockColor(0x64, 0x64, 0x64);
     public static final BlockColor FIRE_BLOCK_COLOR = TNT_BLOCK_COLOR;
 
     private final int red;

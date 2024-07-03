@@ -39,8 +39,9 @@ import static cn.nukkit.utils.Utils.dynamic;
  */
 @Log4j2
 public abstract class Block extends Position implements Metadatable, Cloneable, AxisAlignedBB, BlockID {
-    public static final int MAX_BLOCK_ID = dynamic(810);
+    public static final int MAX_BLOCK_ID = dynamic(1039);
     public static final int DATA_BITS = dynamic(6);
+    public static final int ID_MASK = 0xfff; //max 4095
     public static final int DATA_SIZE = dynamic(1 << DATA_BITS);
     public static final int DATA_MASK = dynamic(DATA_SIZE - 1);
 
@@ -59,6 +60,11 @@ public abstract class Block extends Position implements Metadatable, Cloneable, 
 
     public AxisAlignedBB boundingBox = null;
     public int layer = 0;
+
+    /**
+     * A commonly used block face pattern
+     */
+    protected static final int[] FACES2534 = {2, 5, 3, 4};
 
     protected Block() {}
 
@@ -333,7 +339,7 @@ public abstract class Block extends Position implements Metadatable, Cloneable, 
             list[HARD_GLASS] = BlockHardGlass.class; //253
             list[HARD_STAINED_GLASS] = BlockHardGlassStained.class; //254
             list[RESERVED6] = BlockReserved6.class; //255
-
+            // 256 not yet in Minecraft
             list[PRISMARINE_STAIRS] = BlockStairsPrismarine.class; //257
             list[DARK_PRISMARINE_STAIRS] = BlockStairsDarkPrismarine.class; //258
             list[PRISMARINE_BRICKS_STAIRS] = BlockStairsPrismarineBrick.class; //259
@@ -355,16 +361,26 @@ public abstract class Block extends Position implements Metadatable, Cloneable, 
             list[CORAL_FAN_HANG3] = BlockCoralFanHang3.class; //392
             list[BLOCK_KELP] = BlockKelp.class; //393
             list[DRIED_KELP_BLOCK] = BlockDriedKelpBlock.class; //394
-
+            list[ACACIA_BUTTON] = BlockButtonAcacia.class; //395
+            list[BIRCH_BUTTON] = BlockButtonBirch.class; //396
+            list[DARK_OAK_BUTTON] = BlockButtonDarkOak.class; //397
+            list[JUNGLE_BUTTON] = BlockButtonJungle.class; //398
+            list[SPRUCE_BUTTON] = BlockButtonSpruce.class; //399
             list[ACACIA_TRAPDOOR] = BlockTrapdoorAcacia.class; //400
             list[BIRCH_TRAPDOOR] = BlockTrapdoorBirch.class; //401
             list[DARK_OAK_TRAPDOOR] = BlockTrapdoorDarkOak.class; //402
             list[JUNGLE_TRAPDOOR] = BlockTrapdoorJungle.class; //403
             list[SPRUCE_TRAPDOOR] = BlockTrapdoorSpruce.class; //404
-
+            list[ACACIA_PRESSURE_PLATE] = BlockPressurePlateAcacia.class; //405
+            list[BIRCH_PRESSURE_PLATE] = BlockPressurePlateBirch.class; //406
+            list[DARK_OAK_PRESSURE_PLATE] = BlockPressurePlateDarkOak.class; //407
+            list[JUNGLE_PRESSURE_PLATE] = BlockPressurePlateJungle.class; //408
+            list[SPRUCE_PRESSURE_PLATE] = BlockPressurePlateSpruce.class; //409
             list[CARVED_PUMPKIN] = BlockCarvedPumpkin.class; //410
             list[SEA_PICKLE] = BlockSeaPickle.class; //411
-
+            list[CONDUIT] = BlockConduit.class; //412
+            // 413 not yet in Minecraft
+            list[TURTLE_EGG] = BlockTurtleEgg.class; //414
             list[BUBBLE_COLUMN] = BlockBubbleColumn.class; //415
             list[BARRIER] = BlockBarrier.class; //416
             list[STONE_SLAB3] = BlockSlabStone3.class; //417
@@ -386,14 +402,11 @@ public abstract class Block extends Position implements Metadatable, Cloneable, 
             list[END_BRICK_STAIRS] = BlockStairsEndBrick.class; //433
             list[MOSSY_COBBLESTONE_STAIRS] = BlockStairsMossyCobblestone.class; //434
             list[NORMAL_STONE_STAIRS] = BlockStairsStone.class; //435
-
+            list[SPRUCE_STANDING_SIGN] = BlockSpruceSignPost.class; //436
+            list[SPRUCE_WALL_SIGN] = BlockSpruceWallSign.class; //437
             list[SMOOTH_STONE] = BlockSmoothStone.class; //438
             list[RED_NETHER_BRICK_STAIRS] = BlockStairsRedNetherBrick.class; //439
             list[SMOOTH_QUARTZ_STAIRS] = BlockStairsSmoothQuartz.class; //440
-
-            list[SPRUCE_STANDING_SIGN] = BlockSpruceSignPost.class; //436
-            list[SPRUCE_WALL_SIGN] = BlockSpruceWallSign.class; //437
-
             list[BIRCH_STANDING_SIGN] = BlockBirchSignPost.class; //441
             list[BIRCH_WALL_SIGN] = BlockBirchWallSign.class; //442
             list[JUNGLE_STANDING_SIGN] = BlockJungleSignPost.class; //443
@@ -403,9 +416,12 @@ public abstract class Block extends Position implements Metadatable, Cloneable, 
             list[DARKOAK_STANDING_SIGN] = BlockDarkOakSignPost.class; //447
             list[DARKOAK_WALL_SIGN] = BlockDarkOakWallSign.class; //448
             list[LECTERN] = BlockLectern.class; //449
-
+            list[GRINDSTONE] = BlockGrindstone.class; //450
             list[BLAST_FURNACE] = BlockBlastFurnace.class; //451
-
+            list[SMOKER] = BlockSmoker.class; //453
+            list[LIT_SMOKER] = BlockSmokerLit.class; //454
+            list[CARTOGRAPHY_TABLE] = BlockCartographyTable.class; //455
+            list[FLETCHING_TABLE] = BlockFletchingTable.class; //456
             list[SMITHING_TABLE] = BlockSmithingTable.class; //457
             list[BARREL] = BlockBarrel.class; //458
 
@@ -416,12 +432,14 @@ public abstract class Block extends Position implements Metadatable, Cloneable, 
             list[WOOD_BARK] = BlockWoodBark.class; //467
             list[COMPOSTER] = BlockComposter.class; //468
             list[LIT_BLAST_FURNACE] = BlockBlastFurnaceLit.class; //469
-
+            list[LIGHT_BLOCK] = BlockLightBlock.class; //470
+            list[WITHER_ROSE] = BlockWitherRose.class; //471
             list[PISTON_HEAD_STICKY] = BlockPistonHeadSticky.class; //472
-
             list[BEE_NEST] = BlockBeeNest.class; //473
             list[BEEHIVE] = BlockBeehive.class; //474
-
+            list[HONEY_BLOCK] = BlockHoneyBlock.class; //475
+            list[HONEYCOMB_BLOCK] = BlockHoneycombBlock.class; //476
+            list[LODESTONE] = BlockLodestone.class; //477
             list[CRIMSON_ROOTS] = BlockRootsCrimson.class; //478
             list[WARPED_ROOTS] = BlockRootsWarped.class; //479
             list[CRIMSON_STEM] = BlockStemCrimson.class; //480
@@ -437,6 +455,9 @@ public abstract class Block extends Position implements Metadatable, Cloneable, 
 
             list[SOUL_SOIL] = BlockSoulSoil.class; //491
 
+            list[NETHER_SPROUTS_BLOCK] = BlockNetherSprouts.class; //493
+            list[TARGET] = BlockTarget.class; //494
+
             list[STRIPPED_CRIMSON_STEM] = BlockStemStrippedCrimson.class; //495
             list[STRIPPED_WARPED_STEM] = BlockStemStrippedWarped.class; //496
             list[CRIMSON_PLANKS] = BlockPlanksCrimson.class; //497
@@ -450,19 +471,98 @@ public abstract class Block extends Position implements Metadatable, Cloneable, 
             list[WARPED_STANDING_SIGN] = BlockWarpedSignPost.class; //506
             list[CRIMSON_WALL_SIGN] = BlockCrimsonWallSign.class; //507
             list[WARPED_WALL_SIGN] = BlockWarpedWallSign.class; //508
-
+            list[CRIMSON_STAIRS] = BlockStairsCrimson.class; //509
+            list[WARPED_STAIRS] = BlockStairsWarped.class; //510
+            list[CRIMSON_FENCE] = BlockFenceCrimson.class; //511
+            list[WARPED_FENCE] = BlockFenceWarped.class; //512
+            list[CRIMSON_FENCE_GATE] = BlockFenceGateCrimson.class; //513
+            list[WARPED_FENCE_GATE] = BlockFenceGateWarped.class; //514
+            list[CRIMSON_BUTTON] = BlockButtonCrimson.class; //515
+            list[WARPED_BUTTON] = BlockButtonWarped.class; //516
+            list[CRIMSON_PRESSURE_PLATE] = BlockPressurePlateCrimson.class; //517
+            list[WARPED_PRESSURE_PLATE] = BlockPressurePlateWarped.class; //518
+            list[CRIMSON_SLAB] = BlockSlabCrimson.class; //519
+            list[WARPED_SLAB] = BlockSlabWarped.class; //520
+            list[CRIMSON_DOUBLE_SLAB] = BlockDoubleSlabCrimson.class; //521
+            list[WARPED_DOUBLE_SLAB] = BlockDoubleSlabWarped.class; //522
             list[SOUL_TORCH] = BlockSoulTorch.class; //523
             list[SOUL_LANTERN] = BlockSoulLantern.class; //524
             list[NETHERITE_BLOCK] = BlockNetheriteBlock.class; //525
             list[ANCIENT_DEBRIS] = BlockAncientDebris.class; //526
             list[RESPAWN_ANCHOR] = BlockRespawnAnchor.class; //527
             list[BLACKSTONE] = BlockBlackstone.class; //528
-
+            list[POLISHED_BLACKSTONE_BRICKS] = BlockBricksBlackstonePolished.class; //529
+            list[POLISHED_BLACKSTONE_BRICK_STAIRS] = BlockStairsBrickBlackstonePolished.class; //530
+            list[BLACKSTONE_STAIRS] = BlockStairsBlackstone.class; //531
+            list[BLACKSTONE_WALL] = BlockWallBlackstone.class; //532
+            list[POLISHED_BLACKSTONE_BRICK_WALL] = BlockWallBrickBlackstonePolished.class; //533
+            list[CHISELED_POLISHED_BLACKSTONE] = BlockBlackstonePolishedChiseled.class; //534
+            list[CRACKED_POLISHED_BLACKSTONE_BRICKS] = BlockBricksBlackstonePolishedCracked.class; //535
+            list[GILDED_BLACKSTONE] = BlockBlackstoneGilded.class; //536
+            list[BLACKSTONE_SLAB] = BlockSlabBlackstone.class; //537
+            list[BLACKSTONE_DOUBLE_SLAB] = BlockDoubleSlabBlackstone.class; //538
+            list[POLISHED_BLACKSTONE_BRICK_SLAB] = BlockSlabBrickBlackstonePolished.class; //539
+            list[POLISHED_BLACKSTONE_BRICK_DOUBLE_SLAB] = BlockDoubleSlabBrickBlackstonePolished.class; //540
+            list[CHAIN_BLOCK] = BlockChain.class; //541
+            list[TWISTING_VINES] = BlockVinesTwisting.class; //542
             list[NETHER_GOLD_ORE] = BlockOreGoldNether.class; //543
             list[CRYING_OBSIDIAN] = BlockCryingObsidian.class; //544
             list[SOUL_CAMPFIRE_BLOCK] = BlockCampfireSoul.class; //545
-
+            list[POLISHED_BLACKSTONE] = BlockBlackstonePolished.class; //546
+            list[POLISHED_BLACKSTONE_STAIRS] = BlockStairsBlackstonePolished.class; //547
+            list[POLISHED_BLACKSTONE_SLAB] = BlockSlabBlackstonePolished.class; //548
+            list[POLISHED_BLACKSTONE_DOUBLE_SLAB] = BlockDoubleSlabBlackstonePolished.class; //549
+            list[POLISHED_BLACKSTONE_PRESSURE_PLATE] = BlockPressurePlateBlackstonePolished.class; //550
+            list[POLISHED_BLACKSTONE_BUTTON] = BlockButtonBlackstonePolished.class; //551
+            list[POLISHED_BLACKSTONE_WALL] = BlockWallBlackstonePolished.class; //552
+            list[WARPED_HYPHAE] = BlockHyphaeWarped.class; //553
+            list[CRIMSON_HYPHAE] = BlockHyphaeCrimson.class; //554
+            list[STRIPPED_CRIMSON_HYPHAE] = BlockHyphaeStrippedCrimson.class; //555
+            list[STRIPPED_WARPED_HYPHAE] = BlockHyphaeStrippedWarped.class; //556
+            list[CHISELED_NETHER_BRICKS] = BlockBricksNetherChiseled.class; //557
+            list[CRACKED_NETHER_BRICKS] = BlockBricksNetherCracked.class; //558
+            list[QUARTZ_BRICKS] = BlockBricksQuartz.class; //559
+            
             list[COPPER_ORE] = BlockOreCopper.class; // 566
+
+            list[AMETHYST_BLOCK] = BlockAmethyst.class; //582
+
+            list[DEEPSLATE] = BlockDeepslate.class; // 633
+
+            list[CANDLE] = BlockCandle.class; //667
+            list[WHITE_CANDLE] = BlockCandleWhite.class; //668
+            list[ORANGE_CANDLE] = BlockCandleOrange.class; //669
+            list[MAGENTA_CANDLE] = BlockCandleMagenta.class; //670
+            list[LIGHT_BLUE_CANDLE] = BlockCandleLightBlue.class; //671
+            list[YELLOW_CANDLE] = BlockCandleYellow.class; //672
+            list[LIME_CANDLE] = BlockCandleLime.class; //673
+            list[PINK_CANDLE] = BlockCandlePink.class; //674
+            list[GRAY_CANDLE] = BlockCandleGray.class; //675
+            list[LIGHT_GRAY_CANDLE] = BlockCandleLightGray.class; //676
+            list[CYAN_CANDLE] = BlockCandleCyan.class; //677
+            list[PURPLE_CANDLE] = BlockCandlePurple.class; //678
+            list[BLUE_CANDLE] = BlockCandleBlue.class; //679
+            list[BROWN_CANDLE] = BlockCandleBrown.class; //680
+            list[GREEN_CANDLE] = BlockCandleGreen.class; //681
+            list[RED_CANDLE] = BlockCandleRed.class; //682
+            list[BLACK_CANDLE] = BlockCandleBlack.class; //683
+            list[CANDLE_CAKE] = BlockCandleCake.class; //684
+            list[WHITE_CANDLE_CAKE] = BlockCandleCakeWhite.class; //685
+            list[ORANGE_CANDLE_CAKE] = BlockCandleCakeOrange.class; //686
+            list[MAGENTA_CANDLE_CAKE] = BlockCandleCakeMagenta.class; //687
+            list[LIGHT_BLUE_CANDLE_CAKE] = BlockCandleCakeLightBlue.class; //688
+            list[YELLOW_CANDLE_CAKE] = BlockCandleCakeYellow.class; //689
+            list[LIME_CANDLE_CAKE] = BlockCandleCakeLime.class; //690
+            list[PINK_CANDLE_CAKE] = BlockCandleCakePink.class; //691
+            list[GRAY_CANDLE_CAKE] = BlockCandleCakeGray.class; //692
+            list[LIGHT_GRAY_CANDLE_CAKE] = BlockCandleCakeLightGray.class; //693
+            list[CYAN_CANDLE_CAKE] = BlockCandleCakeCyan.class; //694
+            list[PURPLE_CANDLE_CAKE] = BlockCandleCakePurple.class; //695
+            list[BLUE_CANDLE_CAKE] = BlockCandleCakeBlue.class; //696
+            list[BROWN_CANDLE_CAKE] = BlockCandleCakeBrown.class; //697
+            list[GREEN_CANDLE_CAKE] = BlockCandleCakeGreen.class; //698
+            list[RED_CANDLE_CAKE] = BlockCandleCakeRed.class; //699
+            list[BLACK_CANDLE_CAKE] = BlockCandleCakeBlack.class; //700
 
             list[RAW_IRON_BLOCK] = BlockRawIron.class; //706
             list[RAW_COPPER_BLOCK] = BlockRawCopper.class; //707
@@ -472,13 +572,33 @@ public abstract class Block extends Position implements Metadatable, Cloneable, 
             list[VERDANT_FROGLIGHT] = BlockFrogLightVerdant.class; //725
             list[OCHRE_FROGLIGHT] = BlockFrogLightOchre.class; //726
 
-            list[MANGROVE_PLANKS] = BlockPlanksMangrove.class;// 741
+            list[MANGROVE_PLANKS] = BlockPlanksMangrove.class; //741
 
-            list[BAMBOO_PLANKS] = BlockPlanksBamboo.class;// 765
+            list[BAMBOO_PLANKS] = BlockPlanksBamboo.class; //765
 
-            list[CHERRY_PLANKS] = BlockPlanksCherry.class;// 792
+            list[SUSPICIOUS_SAND] = BlockSuspiciousSand.class; // 784
+
+            list[STRIPPED_CHERRY_LOG] = BlockLogStrippedCherry.class; //790
+            list[CHERRY_LOG] = BlockCherryLog.class; //791
+            list[CHERRY_PLANKS] = BlockPlanksCherry.class; //792
+
+            list[STRIPPED_CHERRY_WOOD] = BlockWoodStrippedCherry.class; //800
+            list[CHERRY_WOOD] = BlockWoodCherry.class; //801
+            list[CHERRY_SAPLING] = BlockCherrySapling.class; //802
+            list[CHERRY_LEAVES] = BlockCherryLeaves.class; //803
 
             list[DECORATED_POT] = BlockDecoratedPot.class; //806
+
+            list[SUSPICIOUS_GRAVEL] = BlockSuspiciousGravel.class; //828
+
+            list[COPPER_BULB] = BlockCopperBulb.class; //1031
+            list[EXPOSED_COPPER_BULB] = BlockExposedCopperBulb.class; //1032
+            list[WEATHERED_COPPER_BULB] = BlockWeatheredCopperBulb.class; //1033
+            list[OXIDIZED_COPPER_BULB] = BlockOxidizedCopperBulb.class; //1034
+            list[WAXED_COPPER_BULB] = BlockWaxedCopperBulb.class; //1035
+            list[WAXED_EXPOSED_COPPER_BULB] = BlockWaxedExposedCopperBulb.class; //1036
+            list[WAXED_WEATHERED_COPPER_BULB] = BlockWaxedWeatheredCopperBulb.class; //1037
+            list[WAXED_OXIDIZED_COPPER_BULB] = BlockWaxedOxidizedCopperBulb.class; //1038
 
             for (int id = 0; id < MAX_BLOCK_ID; id++) {
                 Class<?> c = list[id];
@@ -881,7 +1001,7 @@ public abstract class Block extends Position implements Metadatable, Cloneable, 
         }
 
         return id;
-	}
+    }
 
     /**
      * The full id is a combination of the id and data.
@@ -912,6 +1032,18 @@ public abstract class Block extends Position implements Metadatable, Cloneable, 
         this.z = (int) v.z;
         this.level = v.level;
         this.boundingBox = null;
+    }
+
+    /**
+     * 是否直接掉落方块物品
+     * Whether to drop block items directly
+     *
+     * @param player 玩家
+     * @return true - 直接掉落方块物品, false - 通过getDrops方法获取掉落物品
+     *         true - Drop block items directly, false - Get dropped items through the getDrops method
+     */
+    public boolean isDropOriginal(Player player) {
+        return false;
     }
 
     public Item[] getDrops(Item item) {
@@ -1126,10 +1258,12 @@ public abstract class Block extends Position implements Metadatable, Cloneable, 
         return this.getHardness() != -1;
     }
 
+    @Override
     public Block getSide(BlockFace face) {
         return this.getSide(face, 1);
     }
 
+    @Override
     public Block getSide(BlockFace face, int step) {
         return this.getSideAtLayer(layer, face, step);
     }
@@ -1157,10 +1291,12 @@ public abstract class Block extends Position implements Metadatable, Cloneable, 
         return block;
     }
 
+    @Override
     public Block up() {
         return up(1);
     }
 
+    @Override
     public Block up(int step) {
         return getSide(BlockFace.UP, step);
     }
@@ -1169,10 +1305,12 @@ public abstract class Block extends Position implements Metadatable, Cloneable, 
         return this.getSideAtLayer(layer, BlockFace.UP, step);
     }
 
+    @Override
     public Block down() {
         return down(1);
     }
 
+    @Override
     public Block down(int step) {
         return getSide(BlockFace.DOWN, step);
     }
@@ -1181,10 +1319,12 @@ public abstract class Block extends Position implements Metadatable, Cloneable, 
         return this.getSideAtLayer(layer, BlockFace.DOWN, step);
     }
 
+    @Override
     public Block north() {
         return north(1);
     }
 
+    @Override
     public Block north(int step) {
         return getSide(BlockFace.NORTH, step);
     }
@@ -1193,10 +1333,12 @@ public abstract class Block extends Position implements Metadatable, Cloneable, 
         return this.getSideAtLayer(layer, BlockFace.NORTH, step);
     }
 
+    @Override
     public Block south() {
         return south(1);
     }
 
+    @Override
     public Block south(int step) {
         return getSide(BlockFace.SOUTH, step);
     }
@@ -1205,10 +1347,12 @@ public abstract class Block extends Position implements Metadatable, Cloneable, 
         return this.getSideAtLayer(layer, BlockFace.SOUTH, step);
     }
 
+    @Override
     public Block east() {
         return east(1);
     }
 
+    @Override
     public Block east(int step) {
         return getSide(BlockFace.EAST, step);
     }
@@ -1217,10 +1361,12 @@ public abstract class Block extends Position implements Metadatable, Cloneable, 
         return this.getSideAtLayer(layer, BlockFace.EAST, step);
     }
 
+    @Override
     public Block west() {
         return west(1);
     }
 
+    @Override
     public Block west(int step) {
         return getSide(BlockFace.WEST, step);
     }
@@ -1259,26 +1405,32 @@ public abstract class Block extends Position implements Metadatable, Cloneable, 
         //return new AxisAlignedBB(this.x, this.y, this.z, this.x + 1.0D, this.y + 1.0D, this.z + 1.0D);
     }
 
+    @Override
     public double getMinX() {
         return this.x;
     }
 
+    @Override
     public double getMinY() {
         return this.y;
     }
 
+    @Override
     public double getMinZ() {
         return this.z;
     }
 
+    @Override
     public double getMaxX() {
         return this.x + 1;
     }
 
+    @Override
     public double getMaxY() {
         return this.y + 1;
     }
 
+    @Override
     public double getMaxZ() {
         return this.z + 1;
     }
@@ -1287,6 +1439,7 @@ public abstract class Block extends Position implements Metadatable, Cloneable, 
         return getBoundingBox();
     }
 
+    @Override
     public MovingObjectPosition calculateIntercept(Vector3 pos1, Vector3 pos2) {
         AxisAlignedBB bb = this.getBoundingBox();
         if (bb == null) {
@@ -1407,6 +1560,7 @@ public abstract class Block extends Position implements Metadatable, Cloneable, 
         return clone();
     }
 
+    @Override
     public Block clone() {
         return (Block) super.clone();
     }
@@ -1452,10 +1606,6 @@ public abstract class Block extends Position implements Metadatable, Cloneable, 
         return new ItemBlock(this, this.getDamage(), 1);
     }
 
-    public boolean canSilkTouch() {
-       return false;
-    }
-
     public Optional<Block> firstInLayers(Predicate<Block> condition) {
         return firstInLayers(0, condition);
     }
@@ -1472,15 +1622,72 @@ public abstract class Block extends Position implements Metadatable, Cloneable, 
         return Optional.empty();
     }
 
+    public boolean canSilkTouch() {
+        return false;
+    }
+
+    public boolean isAir() {
+        return false;
+    }
+
+    public boolean isLiquid() {
+        return false;
+    }
+
     public boolean isLiquidSource() {
         return false;
     }
 
+    public boolean isWater() {
+        return false;
+    }
+
+    public boolean isWaterSource() {
+        return false;
+    }
+
+    protected static boolean canStayOnFullSolid(Block down) {
+        if (down.isTransparent()) {
+            switch (down.getId()) {
+                case BEACON:
+                case ICE:
+                case GLASS:
+                case STAINED_GLASS:
+                case HARD_GLASS:
+                case HARD_STAINED_GLASS:
+                case SCAFFOLDING:
+                case BARRIER:
+                case GLOWSTONE:
+                case SEA_LANTERN:
+                case HOPPER_BLOCK:
+                    return true;
+            }
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * 被爆炸破坏时必定掉落<br>
+     * Drop when destroyed by explosion
+     *
+     * @return 是否必定掉落<br>Whether to drop
+     */
+    public boolean alwaysDropsOnExplosion() {
+        return false;
+    }
+
+    @Deprecated
     public static boolean hasWater(int id) {
         return id == WATER || id == STILL_WATER || usesFakeWater[id];
     }
 
+    @Deprecated
     public static boolean usesFakeWater(int id) {
         return usesFakeWater[id];
+    }
+
+    public boolean isSuspiciousBlock() {
+        return false;
     }
 }

@@ -64,10 +64,7 @@ import cn.nukkit.permission.BanEntry;
 import cn.nukkit.permission.BanList;
 import cn.nukkit.permission.DefaultPermissions;
 import cn.nukkit.permission.Permissible;
-import cn.nukkit.plugin.JavaPluginLoader;
-import cn.nukkit.plugin.Plugin;
-import cn.nukkit.plugin.PluginLoadOrder;
-import cn.nukkit.plugin.PluginManager;
+import cn.nukkit.plugin.*;
 import cn.nukkit.plugin.service.NKServiceManager;
 import cn.nukkit.plugin.service.ServiceManager;
 import cn.nukkit.potion.Effect;
@@ -92,6 +89,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import lombok.extern.log4j.Log4j2;
+import org.cloudburstmc.netty.channel.raknet.RakConstants;
 import org.iq80.leveldb.CompressionType;
 import org.iq80.leveldb.DB;
 import org.iq80.leveldb.Options;
@@ -152,7 +150,7 @@ public class Server {
     private final CraftingManager craftingManager;
     private final ResourcePackManager resourcePackManager;
     private final ConsoleCommandSender consoleSender;
-    private IScoreboardManager scoreboardManager;
+    private final IScoreboardManager scoreboardManager;
 
     private int maxPlayers;
     private boolean autoSave = true;
@@ -522,8 +520,22 @@ public class Server {
      * This is needed for structure generation
      */
     public final ForkJoinPool computeThreadPool;
-
+    /**
+     * Set LevelDB cache size.
+     */
+    public int levelDbCache;
+    /**
+     * Use native LevelDB implementation for better performance.
+     */
     public boolean useNativeLevelDB;
+    /**
+     * Enable Raw Drop of Iron and Gold
+     */
+    public boolean enableRawOres;
+    /**
+     * A number of datagram packets each address can send within one RakNet tick (10ms)
+     */
+    public int rakPacketLimit;
 
     Server(final String filePath, String dataPath, String pluginPath, boolean loadPlugins, boolean debug) {
         Preconditions.checkState(instance == null, "Already initialized!");
@@ -793,7 +805,7 @@ public class Server {
         if (this.getPropertyBoolean("entity-auto-spawn-task", true)) {
             this.spawnerTask = new SpawnerTask();
             int spawnerTicks = Math.max(this.getPropertyInt("ticks-per-entity-spawns", 200), 2) >> 1; // Run the spawner on 2x speed but spawn only either monsters or animals
-            this.scheduler.scheduleDelayedRepeatingTask(this.spawnerTask, spawnerTicks, spawnerTicks);
+            this.scheduler.scheduleDelayedRepeatingTask(InternalPlugin.INSTANCE, this.spawnerTask, spawnerTicks, spawnerTicks);
         }
 
         if (this.getPropertyBoolean("bstats-metrics", true)) {
@@ -819,6 +831,8 @@ public class Server {
             } catch (Exception ignore) {
             }
         });
+
+        Runtime.getRuntime().addShutdownHook(new Thread(this::forceShutdown));
 
         this.start();
     }
@@ -1150,7 +1164,10 @@ public class Server {
                             int offset = 0;
                             for (int i = 0; i < levelArray.length; i++) {
                                 offset = (i + lastLevelGC) % levelArray.length;
-                                levelArray[offset].doGarbageCollection(allocated - 1);
+                                Level level = levelArray[offset];
+                                if (!level.isBeingConverted) {
+                                    level.doGarbageCollection(allocated - 1);
+                                }
                                 allocated = next - System.currentTimeMillis();
                                 if (allocated <= 0) break;
                             }
@@ -1238,7 +1255,7 @@ public class Server {
     }
 
     public void removePlayerListData(UUID uuid, Collection<Player> players) {
-        this.removePlayerListData(uuid, players.toArray(new Player[0]));
+        this.removePlayerListData(uuid, players.toArray(Player.EMPTY_ARRAY));
     }
 
     public void removePlayerListData(UUID uuid, Player player) {
@@ -1249,9 +1266,7 @@ public class Server {
     }
 
     public void sendFullPlayerListData(Player player) {
-        PlayerListPacket pk = new PlayerListPacket();
-        pk.type = PlayerListPacket.TYPE_ADD;
-        pk.entries = this.playerList.values().stream()
+        PlayerListPacket.Entry[] array = this.playerList.values().stream()
                 .map(p -> new PlayerListPacket.Entry(
                         p.getUniqueId(),
                         p.getId(),
@@ -1259,11 +1274,25 @@ public class Server {
                         p.getSkin(),
                         p.getLoginChainData().getXUID()))
                 .toArray(PlayerListPacket.Entry[]::new);
-        player.dataPacket(pk);
+        Object[][] splitArray = Utils.splitArray(array, 50);
+        if (splitArray != null) {
+            for (Object[] a : splitArray) {
+                PlayerListPacket pk = new PlayerListPacket();
+                pk.type = PlayerListPacket.TYPE_ADD;
+                pk.entries = (PlayerListPacket.Entry[]) a;
+                player.dataPacket(pk);
+            }
+        }
     }
 
     public void sendRecipeList(Player player) {
-        if (player.protocol >= ProtocolInfo.v1_20_60) {
+        if (player.protocol >= ProtocolInfo.v1_21_0) {
+            player.dataPacket(CraftingManager.packet685);
+        } else if (player.protocol >= ProtocolInfo.v1_20_80) {
+            player.dataPacket(CraftingManager.packet671);
+        } else if (player.protocol >= ProtocolInfo.v1_20_70) {
+            player.dataPacket(CraftingManager.packet662);
+        } else if (player.protocol >= ProtocolInfo.v1_20_60) {
             player.dataPacket(CraftingManager.packet649);
         } else if (player.protocol >= ProtocolInfo.v1_20_50) {
             player.dataPacket(CraftingManager.packet630);
@@ -1328,9 +1357,13 @@ public class Server {
             }
         }
 
+        for (Player p : this.getOnlinePlayers().values()) {
+            p.resetPacketCounters();
+        }
+
         // Do level ticks
         for (Level level : this.levelArray) {
-            if (level.getTickRate() > this.baseTickRate && --level.tickRateCounter > 0) {
+            if (level.isBeingConverted || (level.getTickRate() > this.baseTickRate && --level.tickRateCounter > 0)) {
                 continue;
             }
 
@@ -1450,7 +1483,9 @@ public class Server {
 
         if (this.tickCounter % 100 == 0) {
             for (Level level : this.levelArray) {
-                level.doChunkGarbageCollection();
+                if (!level.isBeingConverted) {
+                    level.doChunkGarbageCollection();
+                }
             }
         }
 
@@ -1932,7 +1967,7 @@ public class Server {
             }
 
             if (async) {
-                this.getScheduler().scheduleTask(new Task() {
+                this.getScheduler().scheduleTask(InternalPlugin.INSTANCE, new Task() {
                     boolean hasRun = false;
 
                     @Override
@@ -2081,7 +2116,7 @@ public class Server {
             }
         }
 
-        return matchedPlayer.toArray(new Player[0]);
+        return matchedPlayer.toArray(Player.EMPTY_ARRAY);
     }
 
     /**
@@ -2893,6 +2928,7 @@ public class Server {
     private static void registerBlockEntities() {
         BlockEntity.registerBlockEntity(BlockEntity.FURNACE, BlockEntityFurnace.class);
         BlockEntity.registerBlockEntity(BlockEntity.BLAST_FURNACE, BlockEntityBlastFurnace.class);
+        BlockEntity.registerBlockEntity(BlockEntity.SMOKER, BlockEntitySmoker.class);
         BlockEntity.registerBlockEntity(BlockEntity.CHEST, BlockEntityChest.class);
         BlockEntity.registerBlockEntity(BlockEntity.SIGN, BlockEntitySign.class);
         BlockEntity.registerBlockEntity(BlockEntity.ENCHANT_TABLE, BlockEntityEnchantTable.class);
@@ -2922,6 +2958,8 @@ public class Server {
         BlockEntity.registerBlockEntity(BlockEntity.MOVING_BLOCK, BlockEntityMovingBlock.class);
         BlockEntity.registerBlockEntity(BlockEntity.END_GATEWAY, BlockEntityEndGateway.class);
         BlockEntity.registerBlockEntity(BlockEntity.DECORATED_POT, BlockEntityDecoratedPot.class);
+        BlockEntity.registerBlockEntity(BlockEntity.TARGET, BlockEntityTarget.class);
+        BlockEntity.registerBlockEntity(BlockEntity.BRUSHABLE_BLOCK, BlockEntityBrushableBlock.class);
     }
 
     /**
@@ -3083,7 +3121,10 @@ public class Server {
             }
         }
 
+        this.levelDbCache = this.getPropertyInt("leveldb-cache-mb", 80);
         this.useNativeLevelDB = this.getPropertyBoolean("use-native-leveldb", false);
+        this.enableRawOres = this.getPropertyBoolean("enable-raw-ores", true);
+        this.rakPacketLimit = this.getPropertyInt("rak-packet-limit", RakConstants.DEFAULT_PACKET_LIMIT);
     }
 
     /**
@@ -3161,8 +3202,7 @@ public class Server {
             put("compression-level", 4);
             put("compression-threshold", "256");
             put("use-snappy-compression", true);
-            put("min-mtu", 576);
-            put("max-mtu", 1492);
+            put("rak-packet-limit", RakConstants.DEFAULT_PACKET_LIMIT);
             put("timeout-milliseconds", 25000);
 
             put("auto-tick-rate", true);
@@ -3226,7 +3266,9 @@ public class Server {
             put("enable-spark", false);
             put("hastebin-token", "");
 
+            put("leveldb-cache-mb", 80);
             put("use-native-leveldb", false);
+            put("enable-raw-ores", true);
         }
     }
 
@@ -3262,6 +3304,7 @@ public class Server {
             return new AccessControlContext(new ProtectionDomain[]{new ProtectionDomain(null, permissions)});
         }
 
+        @Override
         @SuppressWarnings("removal")
         public ForkJoinWorkerThread newThread(final ForkJoinPool pool) {
             return AccessController.doPrivileged((PrivilegedAction<ForkJoinWorkerThread>) () -> new ComputeThread(pool, threadCount), ACC);

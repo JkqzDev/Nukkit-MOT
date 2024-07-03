@@ -13,6 +13,9 @@ import cn.nukkit.utils.Faceable;
  */
 public abstract class BlockButton extends BlockFlowable implements Faceable {
 
+    public static final int BUTTON_PRESSED_BIT = 0x08;
+    public static final int FACING_DIRECTION_BIT = 0x07;
+
     public BlockButton() {
         this(0);
     }
@@ -64,7 +67,7 @@ public abstract class BlockButton extends BlockFlowable implements Faceable {
         }
 
         this.level.getServer().getPluginManager().callEvent(new BlockRedstoneEvent(this, 0, 15));
-        this.setDamage(this.getDamage() ^ 0x08);
+        this.setDamage(this.getDamage() ^ BUTTON_PRESSED_BIT);
         this.level.setBlock(this, this, true, false);
         this.level.addSound(new ButtonClickSound(this.add(0.5, 0.5, 0.5)));
         this.level.scheduleUpdate(this, 30);
@@ -85,7 +88,7 @@ public abstract class BlockButton extends BlockFlowable implements Faceable {
             if (this.isActivated()) {
                 this.level.getServer().getPluginManager().callEvent(new BlockRedstoneEvent(this, 15, 0));
 
-                this.setDamage(this.getDamage() ^ 0x08);
+                this.setDamage(this.getDamage() ^ BUTTON_PRESSED_BIT);
                 this.level.setBlock(this, this, true, false);
                 this.level.addSound(new ButtonClickSound(this.add(0.5, 0.5, 0.5)));
 
@@ -100,7 +103,7 @@ public abstract class BlockButton extends BlockFlowable implements Faceable {
     }
 
     public boolean isActivated() {
-        return ((this.getDamage() & 0x08) == 0x08);
+        return ((this.getDamage() & BUTTON_PRESSED_BIT) == BUTTON_PRESSED_BIT);
     }
 
     @Override
@@ -108,17 +111,18 @@ public abstract class BlockButton extends BlockFlowable implements Faceable {
         return true;
     }
 
+    @Override
     public int getWeakPower(BlockFace side) {
         return isActivated() ? 15 : 0;
     }
 
+    @Override
     public int getStrongPower(BlockFace side) {
         return !isActivated() ? 0 : (getFacing() == side ? 15 : 0);
     }
 
     public BlockFace getFacing() {
-        int side = isActivated() ? getDamage() ^ 0x08 : getDamage();
-        return BlockFace.fromIndex(side);
+        return BlockFace.fromIndex(this.getDamage() & FACING_DIRECTION_BIT);
     }
 
     @Override
@@ -132,7 +136,7 @@ public abstract class BlockButton extends BlockFlowable implements Faceable {
 
     @Override
     public Item toItem() {
-        return Item.get(this.getId(), 0);
+        return Item.get(this.getItemId(), 0);
     }
 
     @Override

@@ -14,6 +14,7 @@ import cn.nukkit.item.ItemBlock;
 import cn.nukkit.item.ItemMap;
 import cn.nukkit.network.protocol.*;
 import cn.nukkit.network.protocol.types.ContainerIds;
+import cn.nukkit.network.protocol.types.inventory.ContainerType;
 import cn.nukkit.network.protocol.v113.ContainerSetContentPacketV113;
 import cn.nukkit.network.protocol.v113.ContainerSetSlotPacketV113;
 
@@ -183,7 +184,7 @@ public class PlayerInventory extends BaseInventory {
     }
 
     public void sendHeldItem(Collection<Player> players) {
-        this.sendHeldItem(players.toArray(new Player[0]));
+        this.sendHeldItem(players.toArray(Player.EMPTY_ARRAY));
     }
 
     @Override
@@ -417,7 +418,7 @@ public class PlayerInventory extends BaseInventory {
     }
 
     public void sendArmorContents(Collection<Player> players) {
-        this.sendArmorContents(players.toArray(new Player[0]));
+        this.sendArmorContents(players.toArray(Player.EMPTY_ARRAY));
     }
 
     public void sendArmorSlot(int index, Player player) {
@@ -453,7 +454,7 @@ public class PlayerInventory extends BaseInventory {
     }
 
     public void sendArmorSlot(int index, Collection<Player> players) {
-        this.sendArmorSlot(index, players.toArray(new Player[0]));
+        this.sendArmorSlot(index, players.toArray(Player.EMPTY_ARRAY));
     }
 
     @Override
@@ -463,7 +464,7 @@ public class PlayerInventory extends BaseInventory {
 
     @Override
     public void sendContents(Collection<Player> players) {
-        this.sendContents(players.toArray(new Player[0]));
+        this.sendContents(players.toArray(Player.EMPTY_ARRAY));
     }
 
     @Override
@@ -492,7 +493,7 @@ public class PlayerInventory extends BaseInventory {
 
     @Override
     public void sendSlot(int index, Collection<Player> players) {
-        this.sendSlot(index, players.toArray(new Player[0]));
+        this.sendSlot(index, players.toArray(Player.EMPTY_ARRAY));
     }
 
     @Override
@@ -591,6 +592,7 @@ public class PlayerInventory extends BaseInventory {
         ContainerClosePacket pk = new ContainerClosePacket();
         pk.windowId = who.getWindowId(this);
         pk.wasServerInitiated = who.getClosingWindowId() != pk.windowId;
+        pk.type = ContainerType.from(this.type.getNetworkType());
         who.dataPacket(pk);
         // Player can never stop viewing their own inventory
         if (who != holder) {

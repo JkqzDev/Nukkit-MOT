@@ -7,6 +7,20 @@ import cn.nukkit.math.BlockFace;
 
 public class BlockWoodBark extends BlockWood {
 
+    private static final String[] names = new String[]{
+            "Oak Wood",
+            "Spruce Wood",
+            "Birch Wood",
+            "Jungle Wood",
+            "Acacia Wood",
+            "Dark Oak Wood",
+            // illegal
+            "Oak Wood",
+            "Oak Wood"
+    };
+
+    public static final int STRIPPED_BIT = 0b1000;
+
     public BlockWoodBark() {
         this(0);
     }
@@ -27,17 +41,6 @@ public class BlockWoodBark extends BlockWood {
     
     @Override
     public String getName() {
-        String[] names = new String[]{
-                "Oak Wood",
-                "Spruce Wood",
-                "Birch Wood",
-                "Jungle Wood",
-                "Acacia Wood",
-                "Dark Oak Wood",
-                // illegal
-                "Oak Wood",
-                "Oak Wood"
-        };
         return names[getDamage() & 0x7];
     }
     
@@ -48,7 +51,7 @@ public class BlockWoodBark extends BlockWood {
     
     @Override
     protected int getStrippedDamage() {
-        return getDamage() | 0x8;
+        return getDamage() | STRIPPED_BIT;
     }
     
     @Override
@@ -67,6 +70,7 @@ public class BlockWoodBark extends BlockWood {
     
     @Override
     public Item toItem() {
-        return new ItemBlock(new BlockWoodBark(), getDamage() & 0xF);
+        int meta = getDamage() & 0xF;
+        return new ItemBlock(Block.get(WOOD_BARK, meta), meta);
     }
 }
