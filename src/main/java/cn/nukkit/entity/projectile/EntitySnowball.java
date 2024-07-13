@@ -60,10 +60,10 @@ public class EntitySnowball extends EntityProjectile {
 
         boolean hasUpdate = super.onUpdate(currentTick);
 
-        if (this.age > 1200 || this.isCollided || this.hadCollision) {
+        /* if (this.age > 1200 || this.isCollided || this.hadCollision) {
             this.kill();
             hasUpdate = true;
-        }
+        } */
 
         return hasUpdate;
     }
@@ -72,5 +72,7 @@ public class EntitySnowball extends EntityProjectile {
     public void onHit() {
         ItemSnowball snowball = new ItemSnowball();
         level.addParticle(new ItemBreakParticle(this, snowball), null, 5);
+
+        this.kill();
     }
 }
