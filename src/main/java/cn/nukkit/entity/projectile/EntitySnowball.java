@@ -21,27 +21,27 @@ public class EntitySnowball extends EntityProjectile {
 
     @Override
     public float getWidth() {
-        return 0.25f;
+        return 0.20f;
     }
 
     @Override
     public float getLength() {
-        return 0.25f;
+        return 0.20f;
     }
 
     @Override
     public float getHeight() {
-        return 0.25f;
+        return 0.20f;
     }
 
     @Override
     protected float getGravity() {
-        return 0.03f;
+        return 0.027f;
     }
 
     @Override
     protected float getDrag() {
-        return 0.01f;
+        return 0.011f;
     }
 
     public EntitySnowball(FullChunk chunk, CompoundTag nbt) {
