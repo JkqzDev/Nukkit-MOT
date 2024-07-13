@@ -512,7 +512,7 @@ public class Utils {
             case 2:
                 return "iOS";
             case 3:
-                return "macOS";
+                return "MacOS";
             case 4:
                 return "Fire";
             case 5:
@@ -526,11 +526,11 @@ public class Utils {
             case 9:
                 return "Dedicated";
             case 10:
-                return "tvOS";
+                return "TV Os";
             case 11:
-                return "PlayStation";
+                return "Play Station";
             case 12:
-                return "Switch";
+                return "Nintendo Switch";
             case 13:
                 return "Xbox";
             case 14:
