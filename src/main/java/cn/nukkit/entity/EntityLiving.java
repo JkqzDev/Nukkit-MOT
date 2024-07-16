@@ -131,7 +131,7 @@ public abstract class EntityLiving extends Entity implements EntityDamageable {
                 return false;
             }
 
-            if (lastCause.getDamage() > 0) {
+            if (lastCause.getDamage() >= 0) {
                 source.setCancelled(true);
             }
         }
