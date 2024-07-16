@@ -118,9 +118,20 @@ public abstract class EntityLiving extends Entity implements EntityDamageable {
     public boolean attack(EntityDamageEvent source) {
         if (this.noDamageTicks > 0) {
             return false;
-        } else if (this.attackTime > 0) {
+        }/* else if (this.attackTime > 0) {
             EntityDamageEvent lastCause = this.getLastDamageCause();
             if (lastCause != null && lastCause.getDamage() >= source.getDamage()) {
+                return false;
+            }
+        }*/
+        EntityDamageEvent lastCause = getLastDamageCause();
+
+        if (lastCause != null && attackTime > 0) {
+            if (lastCause.getDamage() >= source.getDamage()) {
+                return false;
+            }
+
+            if (lastCause.getDamage() > 0) {
                 return false;
             }
         }
