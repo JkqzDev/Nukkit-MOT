@@ -4367,7 +4367,7 @@ public class Player extends EntityHuman implements CommandSender, InventoryHolde
                                 }
 
                                 if (item.onClickAir(this, directionVector)) {
-                                    if (this.isSurvival() || this.isAdventure() || this.isSpectator()) {
+                                    if (this.isSurvival() || this.isAdventure()) {
                                         if (item.getId() == 0 || this.inventory.getItemInHandFast().getId() == item.getId()) {
                                             this.inventory.setItemInHand(item);
                                         } else {
