@@ -1581,13 +1581,9 @@ public abstract class Entity extends Location implements Metadatable {
             return;
         }
 
-        if (health <= 0) {
+        if (health < 0) {
             if (this.isAlive()) {
-                if (!this.justCreated) {
-                    this.kill();
-                } else {
-                    this.health = 0;
-                }
+                this.kill();
             }
         } else if (health <= this.getMaxHealth() || health < this.health) {
             this.health = health;
