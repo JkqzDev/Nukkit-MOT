@@ -1185,7 +1185,7 @@ public class Player extends EntityHuman implements CommandSender, InventoryHolde
         this.sendFogStack();
         this.sendCameraPresets();
 
-        if (server.updateChecks && this.isOp()) {
+        /*if (server.updateChecks && this.isOp()) {
             CompletableFuture.runAsync(() -> {
                 try {
                     URLConnection request = new URL(Nukkit.BRANCH).openConnection();
@@ -1202,7 +1202,7 @@ public class Player extends EntityHuman implements CommandSender, InventoryHolde
                 } catch (Exception ignore) {
                 }
             });
-        }
+        }*/
     }
 
     protected boolean orderChunks() {
@@ -3920,10 +3920,10 @@ public class Player extends EntityHuman implements CommandSender, InventoryHolde
                     break;
                 }
 
-                if (this.isSpectator()) {
+                /*if (this.isSpectator()) {
                     this.needSendInventory = true;
                     break;
-                }
+                }*/
 
                 InventoryTransactionPacket transactionPacket = (InventoryTransactionPacket) packet;
                 // Nasty hack because the client won't change the right packet in survival when creating netherite stuff,
@@ -4416,7 +4416,7 @@ public class Player extends EntityHuman implements CommandSender, InventoryHolde
                         switch (type) {
                             case InventoryTransactionPacket.USE_ITEM_ON_ENTITY_ACTION_INTERACT:
                                 PlayerInteractEntityEvent playerInteractEntityEvent = new PlayerInteractEntityEvent(this, target, item, useItemOnEntityData.clickPos);
-                                if (this.isSpectator()) playerInteractEntityEvent.setCancelled();
+                                //if (this.isSpectator()) playerInteractEntityEvent.setCancelled();
                                 getServer().getPluginManager().callEvent(playerInteractEntityEvent);
 
                                 if (playerInteractEntityEvent.isCancelled()) {
@@ -5218,7 +5218,7 @@ public class Player extends EntityHuman implements CommandSender, InventoryHolde
 
     @Override
     public void kill() {
-        if (!this.spawned) {
+        if (!this.spawned || this.isAlive()) {
             return;
         }
 
