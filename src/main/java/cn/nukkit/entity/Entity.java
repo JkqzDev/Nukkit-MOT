@@ -1569,7 +1569,7 @@ public abstract class Entity extends Location implements Metadatable {
     }
 
     public boolean isAlive() {
-        return this.health > 0;
+        return this.health >= 1;
     }
 
     public boolean isClosed() {
@@ -1581,13 +1581,9 @@ public abstract class Entity extends Location implements Metadatable {
             return;
         }
 
-        if (health <= 0) {
+        if (health < 1) {
             if (this.isAlive()) {
-                if (!this.justCreated) {
-                    this.kill();
-                } else {
-                    this.health = 0;
-                }
+                this.kill();
             }
         } else if (health <= this.getMaxHealth() || health < this.health) {
             this.health = health;

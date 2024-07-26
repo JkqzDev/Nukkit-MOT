@@ -1113,7 +1113,7 @@ public class Player extends EntityHuman implements CommandSender, InventoryHolde
             this.server.getPluginManager().subscribeToPermission(Server.BROADCAST_CHANNEL_ADMINISTRATIVE, this);
         }
 
-        boolean dead = this.getHealth() < 0;
+        boolean dead = this.getHealth() < 1;
         this.checkSpawnBlockPosition();
         PlayerRespawnEvent respawnEvent = new PlayerRespawnEvent(this, this.level.getSafeSpawn(dead ? this.getSpawn() : this), true);
         this.server.getPluginManager().callEvent(respawnEvent);
@@ -2612,7 +2612,7 @@ public class Player extends EntityHuman implements CommandSender, InventoryHolde
                 .set(Type.FLYING, isSpectator());
 
         Level level;
-        if ((level = this.server.getLevelByName(nbt.getString("Level"))) == null || nbt.getShort("Health") < 0) {
+        if ((level = this.server.getLevelByName(nbt.getString("Level"))) == null || nbt.getShort("Health") < 1) {
             this.setLevel(this.server.getDefaultLevel());
             nbt.putString("Level", this.level.getName());
             Position sp = this.level.getSpawnLocation();
