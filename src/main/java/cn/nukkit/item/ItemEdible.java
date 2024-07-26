@@ -35,7 +35,7 @@ public abstract class ItemEdible extends Item {
 
     @Override
     public boolean onUse(Player player, int ticksUsed) {
-        if (ticksUsed < 31) {
+        if (ticksUsed < 30) {
             return false;
         }
 
