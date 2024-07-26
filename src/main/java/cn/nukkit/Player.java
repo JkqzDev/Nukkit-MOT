@@ -7160,13 +7160,14 @@ public class Player extends EntityHuman implements CommandSender, InventoryHolde
      * @return can eat
      */
     public boolean canEat(boolean update) {
-        if (this.foodData.getLevel() < this.foodData.getMaxLevel() || this.isCreative() || this.server.getDifficulty() == 0) {
+        /*if (this.foodData.getLevel() < this.foodData.getMaxLevel() || this.isCreative() || this.server.getDifficulty() == 0) {
             return true;
-        }
+        }*/
+
         if (update) {
             this.needSendFoodLevel = true;
         }
-        return false;
+        return foodData.getLevel() < foodData.getMaxLevel() || isCreative() || server.getDifficulty() == 0;
     }
 
     public void setLockCameraInput(boolean lockCameraInput) {
