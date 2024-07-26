@@ -35,17 +35,8 @@ public abstract class ItemEdible extends Item {
 
     @Override
     public boolean onUse(Player player, int ticksUsed) {
-
-        Food food = Food.getByRelative(this);
-        if (food != null) {
-            int eatingtick = food.getEatingTickSupplier() == null ? food.getEatingTick() : food.getEatingTickSupplier().getAsInt();
-            if (ticksUsed < eatingtick) {
-                return false;
-            }
-        } else {
-            if (ticksUsed < 10) {
-                return false;
-            }
+        if (ticksUsed < 31) {
+            return false;
         }
 
         PlayerItemConsumeEvent consumeEvent = new PlayerItemConsumeEvent(player, this);
@@ -55,6 +46,7 @@ public abstract class ItemEdible extends Item {
             return false; // Inventory#sendContents is called in Player
         }
 
+        Food food = Food.getByRelative(this);
         if (food != null && food.eatenBy(player)) {
             player.getLevel().addSoundToViewers(player, Sound.RANDOM_BURP);
             if (!player.isCreative() && !player.isSpectator()) {
@@ -62,6 +54,7 @@ public abstract class ItemEdible extends Item {
                 player.getInventory().setItemInHand(this);
             }
         }
+
         return true;
     }
 
