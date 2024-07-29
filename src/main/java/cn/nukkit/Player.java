@@ -83,7 +83,6 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import com.google.gson.JsonParser;
 import io.netty.util.internal.PlatformDependent;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
@@ -102,15 +101,10 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
-import java.net.URL;
-import java.net.URLConnection;
 import java.nio.ByteOrder;
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -4386,6 +4380,7 @@ public class Player extends EntityHuman implements CommandSender, InventoryHolde
                                     if (!item.onUse(this, ticksUsed)) {
                                         this.inventory.sendContents(this);
                                     }
+
                                 }
 
                                 break packetswitch;
@@ -4519,6 +4514,7 @@ public class Player extends EntityHuman implements CommandSender, InventoryHolde
                             this.needSendInventory = true;
                             break packetswitch;
                         }
+
                         ReleaseItemData releaseItemData = (ReleaseItemData) transactionPacket.transactionData;
 
                         try {
@@ -4528,9 +4524,14 @@ public class Player extends EntityHuman implements CommandSender, InventoryHolde
                                     if (this.isUsingItem()) {
                                         item = this.inventory.getItemInHand();
                                         int ticksUsed = this.server.getTick() - this.startAction;
-                                        if (!item.onRelease(this, ticksUsed)) {
+                                        if (item instanceof ItemEdible) {
+                                            if (!item.onUse(this, ticksUsed)) {
+                                                this.inventory.sendContents(this);
+                                            }
+                                        } else if (!item.onRelease(this, ticksUsed)) {
                                             this.inventory.sendContents(this);
                                         }
+
                                         this.setUsingItem(false);
                                     } else {
                                         this.inventory.sendContents(this);
