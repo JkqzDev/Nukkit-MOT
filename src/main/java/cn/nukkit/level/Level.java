@@ -34,6 +34,7 @@ import cn.nukkit.level.format.Chunk;
 import cn.nukkit.level.format.ChunkSection;
 import cn.nukkit.level.format.FullChunk;
 import cn.nukkit.level.format.LevelProvider;
+import cn.nukkit.level.format.anvil.Anvil;
 import cn.nukkit.level.format.generic.BaseFullChunk;
 import cn.nukkit.level.format.generic.EmptyChunkSection;
 import cn.nukkit.level.format.generic.serializer.NetworkChunkSerializer;
@@ -474,6 +475,10 @@ public class Level implements ChunkManager, Metadatable {
     public void initLevel() {
         Generator generator = generators.get();
         this.dimensionData = generator.getDimensionData();
+        //Anvil 不支持384世界高度
+        if (this.dimensionData.getDimensionId() == DIMENSION_OVERWORLD && this.provider instanceof Anvil) {
+            this.dimensionData = DimensionData.LEGACY_DIMENSION;
+        }
         this.gameRules = this.requireProvider().getGamerules();
     }
 
@@ -1842,17 +1847,20 @@ public class Level implements ChunkManager, Metadatable {
     }
 
     public int getFullBlock(int x, int y, int z, int layer) {
-        return this.getChunk(x >> 4, z >> 4, false).getFullBlock(x & 0x0f, y & 0xff, z & 0x0f, layer);
+        return this.getFullBlock(null, x, y, z, layer);
     }
 
     public int getFullBlock(FullChunk fullChunk, int x, int y, int z, int layer) {
+        if (!isYInRange(y)) {
+            return 0;
+        }
         FullChunk chunk = fullChunk;
         int cx = x >> 4;
         int cz = z >> 4;
         if (chunk == null || chunk.getX() != cx || chunk.getZ() != cz) {
             chunk = getChunk(cx, cz, false);
         }
-        return chunk.getFullBlock(x & 0x0f, y & 0xff, z & 0x0f, layer);
+        return chunk.getFullBlock(x & 0x0f, y, z & 0x0f, layer);
     }
 
     public int getBlockRuntimeId(int x, int y, int z, int layer) {
@@ -1860,7 +1868,7 @@ public class Level implements ChunkManager, Metadatable {
     }
 
     public int getBlockRuntimeId(int protocolId, int x, int y, int z, int layer) {
-        return this.getChunk(x >> 4, z >> 4, false).getBlockRuntimeId(protocolId, x & 0x0f, y & 0xff, z & 0x0f, layer);
+        return this.getChunk(x >> 4, z >> 4, false).getBlockRuntimeId(protocolId, x & 0x0f, y, z & 0x0f, layer);
     }
 
     public Set<Block> getBlockAround(@NotNull Vector3 pos) {
