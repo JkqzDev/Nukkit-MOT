@@ -1874,9 +1874,9 @@ public class Player extends EntityHuman implements CommandSender, InventoryHolde
                             getServer().getScheduler().scheduleTask(InternalPlugin.INSTANCE, () -> {
                                 if (foundPortal == null) {
                                     BlockNetherPortal.spawnPortal(portalPos);
-                                    teleport(portalPos.add(1.5, 1, 0.5));
+                                    teleport(portalPos.add(1.5, 1, 0.5), TeleportCause.NETHER_PORTAL);
                                 } else {
-                                    teleport(BlockNetherPortal.getSafePortal(foundPortal));
+                                    teleport(BlockNetherPortal.getSafePortal(foundPortal), TeleportCause.NETHER_PORTAL);
                                 }
                                 portalPos = null;
                             });
@@ -1920,9 +1920,32 @@ public class Player extends EntityHuman implements CommandSender, InventoryHolde
         double distanceSquared = clientPos.distanceSquared(this);
         if (distanceSquared == 0) {
             if (this.lastYaw != this.yaw || this.lastPitch != this.pitch) {
-                this.lastYaw = this.yaw;
-                this.lastPitch = this.pitch;
-                this.needSendRotation = true;
+                if (!this.firstMove) {
+                    Location from = new Location(this.x, this.y, this.z, this.lastYaw, this.lastPitch, this.level);
+                    Location to = this.getLocation();
+
+                    PlayerMoveEvent moveEvent = new PlayerMoveEvent(this, from, to);
+                    this.server.getPluginManager().callEvent(moveEvent);
+
+                    if (moveEvent.isCancelled()) {
+                        this.teleport(from, null);
+                        return;
+                    }
+
+                    this.lastYaw = to.yaw;
+                    this.lastPitch = to.pitch;
+
+                    if (!to.equals(moveEvent.getTo())) { // If plugins modify the destination
+                        this.teleport(moveEvent.getTo(), null);
+                    } else {
+                        this.needSendRotation = true;
+                    }
+                } else {
+                    this.lastYaw = this.yaw;
+                    this.lastPitch = this.pitch;
+                    this.needSendRotation = true;
+                    this.firstMove = false;
+                }
             }
 
             if (this.speed == null) speed = new Vector3(0, 0, 0);
@@ -2063,9 +2086,9 @@ public class Player extends EntityHuman implements CommandSender, InventoryHolde
 
             this.lastYaw = to.yaw;
             this.lastPitch = to.pitch;
-        }
 
-        this.firstMove = false;
+            this.firstMove = false;
+        }
 
         if (this.speed == null) {
             speed = new Vector3(from.x - to.x, from.y - to.y, from.z - to.z);
@@ -2774,7 +2797,6 @@ public class Player extends EntityHuman implements CommandSender, InventoryHolde
         startGamePacket.yaw = (float) this.yaw;
         startGamePacket.pitch = (float) this.pitch;
         startGamePacket.dimension = (byte) (this.level.getDimension() & 0xff);
-        startGamePacket.generator = (byte) ((this.level.getDimension() + 1) & 0xff); //0 旧世界, 1 主世界, 2 下界, 3末地
         startGamePacket.worldGamemode = this.getClientFriendlyGamemode(this.gamemode);
         startGamePacket.difficulty = this.server.getDifficulty();
         startGamePacket.spawnX = (int) this.x;
