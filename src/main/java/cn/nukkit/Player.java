@@ -1480,6 +1480,7 @@ public class Player extends EntityHuman implements CommandSender, InventoryHolde
             this.server.getPluginManager().callEvent(new PlayerBedLeaveEvent(this, this.level.getBlock(this.sleeping)));
 
             this.sleeping = null;
+            this.removeDataProperty(DATA_PLAYER_BED_POSITION);
             this.setDataFlag(DATA_PLAYER_FLAGS, DATA_PLAYER_FLAG_SLEEP, false);
 
             this.level.sleepTicks = 0;
@@ -1783,6 +1784,7 @@ public class Player extends EntityHuman implements CommandSender, InventoryHolde
         boolean portal = false;
         boolean endPortal = false;
         boolean scaffolding = false;
+        boolean powderSnow = false;
 
         for (Block block : this.getCollisionBlocks()) {
             switch (block.getId()) {
@@ -1794,6 +1796,9 @@ public class Player extends EntityHuman implements CommandSender, InventoryHolde
                     continue;
                 case Block.SCAFFOLDING:
                     scaffolding = true;
+                    break;
+                case Block.POWDER_SNOW:
+                    powderSnow = true;
                     break;
             }
 
@@ -1897,6 +1902,26 @@ public class Player extends EntityHuman implements CommandSender, InventoryHolde
                     }
                 }
             }
+        }
+
+        if(this.getFreezingTicks() < 140 && powderSnow) {
+            if (getFreezingTicks() == 0) {
+                this.setSprinting(false);
+            }
+            this.addFreezingTicks(1);
+            EntityFreezeEvent event = new EntityFreezeEvent(this);
+            this.server.getPluginManager().callEvent(event);
+            if (!event.isCancelled()) {
+                this.setMovementSpeed((float) Math.max(0.05, getMovementSpeed() - 3.58e-4));
+            }
+        }
+        if(!powderSnow && this.getFreezingTicks() > 0) {
+            this.addFreezingTicks(-1);
+            this.setMovementSpeed((float) Math.min(Player.DEFAULT_SPEED, getMovementSpeed() + 3.58e-4));//This magic number is to change the player's 0.05 speed within 140tick
+        }
+
+        if (this.getFreezingTicks() == 140 && this.getServer().getTick() % 40 == 0) {
+            this.attack(new EntityDamageEvent(this, EntityDamageEvent.DamageCause.FREEZING, getFrostbiteInjury()));
         }
     }
 

@@ -544,6 +544,10 @@ public class Server {
      */
     public boolean enableRawOres;
     /**
+     * Enable 1.21 paintings
+     */
+    public boolean enableNewPaintings;
+    /**
      * A number of datagram packets each address can send within one RakNet tick (10ms)
      */
     public int rakPacketLimit;
@@ -752,6 +756,7 @@ public class Server {
         Generator.addGenerator(Flat.class, "flat", Generator.TYPE_FLAT);
         Generator.addGenerator(Normal.class, "normal", Generator.TYPE_INFINITE);
         Generator.addGenerator(Normal.class, "default", Generator.TYPE_INFINITE);
+        Generator.addGenerator(OldNormal.class, "oldnormal", Generator.TYPE_INFINITE);
         Generator.addGenerator(Nether.class, "nether", Generator.TYPE_NETHER);
         Generator.addGenerator(End.class, "the_end", Generator.TYPE_THE_END);
         Generator.addGenerator(cn.nukkit.level.generator.Void.class, "void", Generator.TYPE_VOID);
@@ -3017,6 +3022,9 @@ public class Server {
         BlockEntity.registerBlockEntity(BlockEntity.DECORATED_POT, BlockEntityDecoratedPot.class);
         BlockEntity.registerBlockEntity(BlockEntity.TARGET, BlockEntityTarget.class);
         BlockEntity.registerBlockEntity(BlockEntity.BRUSHABLE_BLOCK, BlockEntityBrushableBlock.class);
+        BlockEntity.registerBlockEntity(BlockEntity.CONDUIT, BlockEntityConduit.class);
+
+        // Persistent container, not on vanilla
         BlockEntity.registerBlockEntity(BlockEntity.PERSISTENT_CONTAINER, PersistentDataContainerBlockEntity.class);
     }
 
@@ -3186,6 +3194,7 @@ public class Server {
         this.levelDbCache = this.getPropertyInt("leveldb-cache-mb", 80);
         this.useNativeLevelDB = this.getPropertyBoolean("use-native-leveldb", false);
         this.enableRawOres = this.getPropertyBoolean("enable-raw-ores", true);
+        this.enableNewPaintings = this.getPropertyBoolean("enable-new-paintings", true);
         this.rakPacketLimit = this.getPropertyInt("rak-packet-limit", RakConstants.DEFAULT_PACKET_LIMIT);
     }
 
@@ -3334,6 +3343,7 @@ public class Server {
             put("leveldb-cache-mb", 80);
             put("use-native-leveldb", false);
             put("enable-raw-ores", true);
+            put("enable-new-paintings", true);
         }
     }
 
